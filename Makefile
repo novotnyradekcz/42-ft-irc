@@ -6,7 +6,7 @@
 #    By: rnovotny <rnovotny@student.42prague.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/11 16:53:34 by rnovotny          #+#    #+#              #
-#    Updated: 2026/03/17 14:37:38 by rnovotny         ###   ########.fr        #
+#    Updated: 2026/03/17 16:07:46 by rnovotny         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,6 @@ CC = c++
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -I./src
 RM = rm -f
 
-# Source files
 SRC_DIR = src
 OBJ_DIR = obj
 

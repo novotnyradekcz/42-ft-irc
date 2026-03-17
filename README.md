@@ -2,9 +2,20 @@
 
 *This project has been created as part of the 42 curriculum by rnovotny.*
 
+## Reference IRC Client
+
+**irssi** is the official reference client used for testing this IRC server implementation. The server is designed to be fully compatible with irssi and follows the IRC protocol specifications (RFC 1459 and RFC 2812) to ensure proper interoperability.
+
+### Why irssi?
+- **Standards-compliant**: Implements IRC protocol correctly
+- **Terminal-based**: No GUI required, works on school machines
+- **Widely available**: Pre-installed on many systems, easy to install (`brew install irssi` on macOS)
+- **Popular choice**: Commonly used for ft_irc project at 42 schools
+- **Clear feedback**: Provides detailed connection and error messages
+
 ## Description
 
-ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and can be tested with standard IRC clients such as irssi, WeeChat, or HexChat.
+ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and has been tested with irssi as the reference IRC client.
 
 The project demonstrates advanced network programming concepts including non-blocking I/O, socket programming, and protocol implementation. Key features include:
 - Multi-client support using poll() for efficient I/O multiplexing
@@ -41,9 +52,63 @@ Example:
 ./ircserv 6667 mypassword
 ```
 
-### Connecting with an IRC Client
+### Connecting with IRC Client
 
-#### Using irssi:
+#### Using irssi (Reference Client):
+
+**Installation:**
+```bash
+# macOS
+brew install irssi
+
+# Ubuntu/Debian
+sudo apt-get install irssi
+```
+
+**Basic Connection:**
+```bash
+irssi
+/connect localhost 6667 mypassword
+/nick YourNickname
+/join #channel
+/msg #channel Hello everyone!
+/quit
+```
+
+**Advanced irssi Commands:**
+```bash
+# Connect to server with password
+/connect localhost 6667 mypassword
+
+# Join multiple channels
+/join #general
+/join #random
+
+# Private message
+/msg nickname Hello there
+
+# Leave channel
+/part #channel
+
+# Change nickname
+/nick NewNickname
+
+# Set channel topic (if you're an operator)
+/topic #channel New topic here
+
+# Invite someone to channel
+/invite username #channel
+
+# Kick user (operators only)
+/kick #channel username reason
+
+# Set channel modes (operators only)
+/mode #channel +i          # Invite-only
+/mode #channel +k password # Set channel key
+/mode #channel +o username # Give operator status
+```
+
+#### Using nc (netcat) for protocol testing:
 ```bash
 irssi
 /connect localhost 6667 mypassword
@@ -137,6 +202,38 @@ ft_irc/
 └── bircd/                    # Reference implementation (not modified)
 ```
 
+## irssi Compatibility
+
+This server has been designed to be fully compatible with irssi. The following features are implemented to ensure smooth operation:
+
+### Supported Features
+- ✅ **CAP negotiation**: Server handles CAP LS and CAP END commands (modern IRC clients)
+- ✅ **Proper numeric replies**: All numeric codes are 3-digit padded (001, 002, etc.) as per IRC spec
+- ✅ **Welcome sequence**: Complete RPL_WELCOME through RPL_MYINFO messages (001-004)
+- ✅ **PING/PONG**: Keep-alive mechanism for connection stability
+- ✅ **Message buffering**: Handles partial messages and aggregates packets correctly
+- ✅ **Nickname validation**: Follows IRC nickname rules (max 9 chars, starts with letter)
+- ✅ **Channel prefixes**: Supports # and & channel types
+- ✅ **Operator privileges**: First user in channel automatically becomes operator
+
+### Registration Sequence
+The server requires authentication in the following order (as per ft_irc subject):
+1. **PASS** `<password>` - Must be sent first
+2. **NICK** `<nickname>` - Can be sent before or after USER
+3. **USER** `<username> 0 * <realname>` - Completes registration
+
+Once all three commands are successfully processed, the server sends welcome messages (001-004).
+
+### Tested irssi Versions
+- irssi 1.2.x and later
+- Works with default irssi configuration
+
+### Known Compatibility Notes
+- The server implements the core IRC commands required by the ft_irc subject
+- Advanced IRC features (WHOIS, WHO, LIST, etc.) are not implemented
+- SSL/TLS is not supported
+- SASL authentication is not supported
+
 ## Resources
 
 ### Classic References
@@ -157,7 +254,77 @@ All AI-generated content was thoroughly reviewed, tested, and modified to ensure
 
 ## Testing
 
-### Basic Connection Test
+### Testing with irssi (Reference Client)
+
+#### 1. Basic Connection Test
+```bash
+# Terminal 1: Start server
+./ircserv 6667 password
+
+# Terminal 2: Connect with irssi
+irssi
+/connect localhost 6667 password
+/nick alice
+```
+
+Expected result: You should see welcome messages (001-004) indicating successful registration.
+
+#### 2. Multi-Client Channel Test
+```bash
+# Terminal 1: Server
+./ircserv 6667 password
+
+# Terminal 2: First client
+irssi
+/connect localhost 6667 password
+/nick alice
+/join #test
+/msg #test Hello from Alice!
+
+# Terminal 3: Second client
+irssi
+/connect localhost 6667 password
+/nick bob
+/join #test
+/msg #test Hello from Bob!
+```
+
+Expected result: Both clients should see each other's messages in #test.
+
+#### 3. Operator Commands Test
+```bash
+# As first user in channel (automatically an operator):
+/topic #test This is the new topic
+/mode #test +i              # Set invite-only
+/invite charlie #test       # Invite another user
+/mode #test +k secretpass   # Set channel password
+/mode #test +o bob          # Give operator to bob
+/kick #test bob Goodbye     # Kick bob from channel
+```
+
+#### 4. Private Messaging Test
+```bash
+# In irssi, as alice:
+/msg bob Hello Bob!
+
+# As bob, you should receive the private message
+```
+
+#### 5. Mode Testing
+```bash
+# Create channel and test all modes
+/join #modetest
+/mode #modetest +i          # Invite-only
+/mode #modetest +t          # Topic restricted
+/mode #modetest +k pass123  # Key required
+/mode #modetest +l 5        # User limit 5
+/mode #modetest +o bob      # Give operator
+/mode #modetest -i          # Remove invite-only
+```
+
+### Basic Protocol Testing with nc
+
+#### Basic Connection Test
 1. Start the server: `./ircserv 6667 password`
 2. Connect with client: `nc localhost 6667`
 3. Authenticate:

@@ -86,7 +86,16 @@ void Server::processMessage(Client* client, const std::string& message) {
 	std::vector<std::string> params(tokens.begin() + 1, tokens.end());
 
 	// Route to appropriate handler
-	if (command == "PASS")
+	if (command == "CAP") {
+		// Handle capability negotiation (modern IRC clients like irssi)
+		// We don't support any capabilities, so just acknowledge and continue
+		if (!params.empty() && params[0] == "LS")
+			sendToClient(client, ":server CAP * LS :");
+		else if (!params.empty() && params[0] == "END")
+			; // Just ignore, client will continue with registration
+		return;
+	}
+	else if (command == "PASS")
 		handlePass(client, params);
 	else if (command == "NICK")
 		handleNick(client, params);
@@ -121,7 +130,13 @@ void Server::processMessage(Client* client, const std::string& message) {
 
 void Server::sendNumericReply(Client* client, int code, const std::string& message) {
 	std::ostringstream oss;
-	oss << ":server " << code << " ";
+	oss << ":server ";
+	// Pad the numeric code to 3 digits (required by IRC spec)
+	if (code < 10)
+		oss << "00";
+	else if (code < 100)
+		oss << "0";
+	oss << code << " ";
 	if (!client->getNickname().empty())
 		oss << client->getNickname();
 	else
