@@ -199,7 +199,6 @@ ft_irc/
 │   ├── ChannelCommands.cpp   # Channel-related commands
 │   └── ModeCommand.cpp       # MODE command implementation
 ├── obj/                      # Compiled object files
-└── bircd/                    # Reference implementation (not modified)
 ```
 
 ## irssi Compatibility
