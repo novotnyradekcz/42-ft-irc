@@ -87,12 +87,21 @@ void Server::processMessage(Client* client, const std::string& message) {
 
 	// Route to appropriate handler
 	if (command == "CAP") {
-		// Handle capability negotiation (modern IRC clients like irssi)
-		// We don't support any capabilities, so just acknowledge and continue
-		if (!params.empty() && params[0] == "LS")
-			sendToClient(client, ":server CAP * LS :");
-		else if (!params.empty() && params[0] == "END")
-			; // Just ignore, client will continue with registration
+		// Handle capability negotiation (modern IRC clients like Halloy)
+		// We don't support any extended capabilities, so respond with empty list
+		if (!params.empty()) {
+			std::string subcommand = params[0];
+			for (size_t i = 0; i < subcommand.size(); ++i) {
+				if (subcommand[i] >= 'a' && subcommand[i] <= 'z')
+					subcommand[i] = subcommand[i] - 'a' + 'A';
+			}
+			if (subcommand == "LS" || subcommand == "LIST")
+				sendToClient(client, ":server CAP * LS :");
+			else if (subcommand == "REQ")
+				sendToClient(client, ":server CAP * NAK :" + (params.size() > 1 ? params[1] : ""));
+			else if (subcommand == "END")
+				; // Client finished negotiation, continue with registration
+		}
 		return;
 	}
 	else if (command == "PASS")
