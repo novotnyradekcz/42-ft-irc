@@ -132,6 +132,8 @@ void Server::processMessage(Client* client, const std::string& message) {
 		handleMode(client, params);
 	else if (command == "QUIT")
 		handleQuit(client, params);
+	else if (command == "WHO")
+		handleWho(client, params);
 	else {
 		sendNumericReply(client, 421, command + " :Unknown command");
 	}

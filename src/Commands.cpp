@@ -112,3 +112,72 @@ void Server::handleQuit(Client* client, const std::vector<std::string>& params) 
 
 	removeClient(client->getFd());
 }
+
+void Server::handleWho(Client* client, const std::vector<std::string>& params) {
+	if (params.empty()) {
+		sendNumericReply(client, 461, "WHO :Not enough parameters");
+		return;
+	}
+
+	std::string target = params[0];
+
+	// WHO for a channel
+	if (target[0] == '#' || target[0] == '&') {
+		Channel* channel = getChannel(target);
+		if (!channel) {
+			sendNumericReply(client, 315, target + " :End of WHO list");
+			return;
+		}
+
+		// Send WHO reply for each member
+		const std::set<Client*>& members = channel->getMembers();
+		for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it) {
+			Client* member = *it;
+			std::string flags = "H"; // H = Here (not away)
+			if (channel->isOperator(member))
+				flags += "@";
+			
+			// Format: 352 <client> <channel> <user> <host> <server> <nick> <flags> :<hopcount> <realname>
+			std::ostringstream oss;
+			oss << target << " "
+				<< member->getUsername() << " "
+				<< member->getHostname() << " "
+				<< "server " << member->getNickname() << " "
+				<< flags << " :0 " << member->getRealname();
+			sendNumericReply(client, 352, oss.str());
+		}
+		sendNumericReply(client, 315, target + " :End of WHO list");
+	}
+	else {
+		// WHO for a specific user
+		Client* targetClient = getClientByNickname(target);
+		if (targetClient) {
+			// Find a common channel or use * if none
+			std::string channelName = "*";
+			for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+				if (it->second->isMember(targetClient) && it->second->isMember(client)) {
+					channelName = it->second->getName();
+					break;
+				}
+			}
+			
+			std::string flags = "H";
+			// Check if user is operator in any common channel
+			for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+				if (it->second->isMember(targetClient) && it->second->isOperator(targetClient)) {
+					flags += "@";
+					break;
+				}
+			}
+			
+			std::ostringstream oss;
+			oss << channelName << " "
+				<< targetClient->getUsername() << " "
+				<< targetClient->getHostname() << " "
+				<< "server " << targetClient->getNickname() << " "
+				<< flags << " :0 " << targetClient->getRealname();
+			sendNumericReply(client, 352, oss.str());
+		}
+		sendNumericReply(client, 315, target + " :End of WHO list");
+	}
+}

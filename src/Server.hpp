@@ -53,6 +53,7 @@ private:
 	void handleMode(Client* client, const std::vector<std::string>& params);
 	void handleQuit(Client* client, const std::vector<std::string>& params);
 	void handlePing(Client* client, const std::vector<std::string>& params);
+	void handleWho(Client* client, const std::vector<std::string>& params);
 
 	// Helper functions
 	void sendWelcome(Client* client);
