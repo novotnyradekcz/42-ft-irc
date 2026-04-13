@@ -9,7 +9,7 @@
 #include <cstring>
 #include <cerrno>
 
-Server::Server(int port, const std::string& password) : _port(port), _password(password), _serverSocket(-1), _running(1) {
+Server::Server(int port, const std::string& password) : _port(port), _password(password), _serverSocket(-1) {
 	setupServer();
 }
 
@@ -86,11 +86,11 @@ void Server::listenSocket() {
 }
 
 void Server::run() {
-	while (_running) {
+	while (g_running) {
 		int ret = poll(&_pollFds[0], _pollFds.size(), -1);
 		if (ret < 0) {
 			if (errno == EINTR)
-				continue; // re-check _running at top of loop
+				continue; // re-check g_running at top of loop
 			throw std::runtime_error("Poll failed");
 		}
 
@@ -236,8 +236,4 @@ std::string Server::toLowerCase(const std::string& str) {
 			result[i] = result[i] - 'A' + 'a';
 	}
 	return result;
-}
-
-void Server::stop() {
-	_running = 0;
 }

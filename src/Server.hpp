@@ -9,12 +9,13 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 
+extern volatile sig_atomic_t g_running;
+
 class Server {
 private:
 	int							_port;
 	std::string					_password;
 	int							_serverSocket;
-	volatile sig_atomic_t		_running;
 	std::vector<struct pollfd>	_pollFds;
 	std::map<int, Client*>		_clients;
 	std::map<std::string, Channel*>	_channels;
@@ -69,7 +70,6 @@ public:
 	~Server();
 
 	void run();
-	void stop();
 };
 
 #endif

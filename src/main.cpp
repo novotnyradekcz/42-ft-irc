@@ -3,13 +3,11 @@
 #include <cstdlib>
 #include <csignal>
 
-Server* g_server = NULL;
+volatile sig_atomic_t g_running = 1;
 
 void signalHandler(int signal) {
 	(void)signal;
-	std::cout << "\nShutting down server..." << std::endl;
-	g_server = NULL;
-	exit(0);
+	g_running = 0;
 }
 
 int main(int argc, char** argv) {
@@ -36,7 +34,6 @@ int main(int argc, char** argv) {
 
 	try {
 		Server server(port, password);
-		g_server = &server;
 		server.run();
 	} catch (const std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
