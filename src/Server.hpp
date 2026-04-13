@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <poll.h>
+#include <csignal>
 #include "Client.hpp"
 #include "Channel.hpp"
 
@@ -13,6 +14,7 @@ private:
 	int							_port;
 	std::string					_password;
 	int							_serverSocket;
+	volatile sig_atomic_t		_running;
 	std::vector<struct pollfd>	_pollFds;
 	std::map<int, Client*>		_clients;
 	std::map<std::string, Channel*>	_channels;

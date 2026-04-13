@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 		std::cerr << "Error: " << e.what() << std::endl;
 		return 1;
 	}
-
+	// run() returned cleanly: ~Server() will now be called, freeing all resources
+	std::cout << "Server shut down gracefully." << std::endl;
 	return 0;
 }
