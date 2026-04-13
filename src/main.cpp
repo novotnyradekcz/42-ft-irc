@@ -8,10 +8,7 @@ Server* g_server = NULL;
 void signalHandler(int signal) {
 	(void)signal;
 	std::cout << "\nShutting down server..." << std::endl;
-	if (g_server) {
-		delete g_server;
-		g_server = NULL;
-	}
+	g_server = NULL;
 	exit(0);
 }
 
