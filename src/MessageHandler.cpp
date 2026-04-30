@@ -8,8 +8,13 @@ void Server::handleClientData(int fd) {
 	char buffer[512];
 	int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (bytesRead <= 0) {
-		// Client disconnected or error
+	if (bytesRead < 0) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return;
+		removeClient(fd);
+		return;
+	} else if (bytesRead == 0) {
+		// Client disconnected
 		removeClient(fd);
 		return;
 	}
@@ -22,28 +27,33 @@ void Server::handleClientData(int fd) {
 	// Append to client buffer
 	client->appendToBuffer(std::string(buffer, bytesRead));
 
-	// Process complete messages (ending with \r\n)
-	std::string& buf = const_cast<std::string&>(client->getBuffer());
-	size_t pos;
-	while ((pos = buf.find("\r\n")) != std::string::npos) {
+	// Process complete messages
+	while (true) {
+		client = getClientByFd(fd);
+		if (!client)
+			break;
+
+		std::string buf = client->getBuffer();
+		size_t pos = buf.find("\r\n");
+		size_t advance = 2;
+
+		if (pos == std::string::npos) {
+			pos = buf.find('\n');
+			advance = 1;
+		}
+		if (pos == std::string::npos)
+			break; 
+
 		std::string message = buf.substr(0, pos);
-		buf.erase(0, pos + 2);
+		if (advance == 1 && !message.empty() && message[message.size() - 1] == '\r') {
+			message.erase(message.size() - 1);
+		}
+
+		client->clearBuffer();
+		client->appendToBuffer(buf.substr(pos + advance));
 		
 		if (!message.empty()) {
 			std::cout << "Received from " << fd << ": " << message << std::endl;
-			processMessage(client, message);
-		}
-	}
-
-	// Handle partial data (nc ctrl+D test case)
-	if (!buf.empty() && buf.find('\n') != std::string::npos) {
-		pos = buf.find('\n');
-		std::string message = buf.substr(0, pos);
-		buf.erase(0, pos + 1);
-		if (!message.empty() && message[message.size() - 1] == '\r')
-			message.erase(message.size() - 1);
-		if (!message.empty()) {
-			std::cout << "Received (partial) from " << fd << ": " << message << std::endl;
 			processMessage(client, message);
 		}
 	}
