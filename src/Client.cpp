@@ -32,6 +32,10 @@ const std::string& Client::getBuffer() const {
 	return _buffer;
 }
 
+const std::string& Client::getOutputBuffer() const {
+	return _outputBuffer;
+}
+
 bool Client::isAuthenticated() const {
 	return _authenticated;
 }
@@ -92,6 +96,21 @@ void Client::appendToBuffer(const std::string& data) {
 
 void Client::clearBuffer() {
 	_buffer.clear();
+}
+
+void Client::appendToOutputBuffer(const std::string& data) {
+	_outputBuffer += data;
+}
+
+void Client::eraseOutputBuffer(size_t count) {
+	if (count >= _outputBuffer.size())
+		_outputBuffer.clear();
+	else
+		_outputBuffer.erase(0, count);
+}
+
+bool Client::hasPendingOutput() const {
+	return !_outputBuffer.empty();
 }
 
 // Registration check

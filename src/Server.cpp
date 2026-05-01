@@ -9,6 +9,35 @@
 #include <cstring>
 #include <cerrno>
 
+// Bit check:
+// revents: 0101
+// event:   0001
+// &:       0001 -> event is present
+static bool hasPollEvent(short revents, short event) {
+	return (revents & event) != 0;
+}
+
+// Error flags are independent bits:
+// revents: 1010
+// POLLERR: 0010 -> present
+// POLLHUP: 1000 -> present
+// POLLNVAL: checked the same way
+static bool hasPollError(short revents) {
+	return hasPollEvent(revents, POLLERR)
+		|| hasPollEvent(revents, POLLHUP)
+		|| hasPollEvent(revents, POLLNVAL);
+}
+
+// Event selection:
+// POLLIN:  0001
+// POLLOUT: 0100
+// |:       0101 -> watch read and write
+static short clientPollEvents(bool writable) {
+	if (writable)
+		return POLLIN | POLLOUT;
+	return POLLIN;
+}
+
 Server::Server(int port, const std::string& password) : _port(port), _password(password), _serverSocket(-1) {
 	setupServer();
 }
@@ -95,14 +124,27 @@ void Server::run() {
 		}
 
 		// Check all file descriptors
-		for (size_t i = 0; i < _pollFds.size(); ++i) {
-			if (_pollFds[i].revents & POLLIN) {
-				if (_pollFds[i].fd == _serverSocket) {
+		for (size_t i = 0; i < _pollFds.size();) {
+			int fd = _pollFds[i].fd;
+			short revents = _pollFds[i].revents;
+
+			if (hasPollError(revents)) {
+				if (fd != _serverSocket)
+					removeClient(fd);
+				continue;
+			}
+			if (hasPollEvent(revents, POLLIN)) {
+				if (fd == _serverSocket) {
 					acceptNewClient();
 				} else {
-					handleClientData(_pollFds[i].fd);
+					handleClientData(fd);
 				}
 			}
+			if (fd != _serverSocket && getClientByFd(fd) && hasPollEvent(revents, POLLOUT))
+				flushClientOutput(fd);
+			if (fd != _serverSocket && !getClientByFd(fd))
+				continue;
+			++i;
 		}
 	}
 }
@@ -218,15 +260,54 @@ void Server::removeChannel(const std::string& name) {
 }
 
 void Server::sendMessage(int fd, const std::string& message) {
+	Client* client = getClientByFd(fd);
+	if (!client)
+		return;
+
 	std::string fullMessage = message;
 	if (fullMessage.size() < 2 || fullMessage.substr(fullMessage.size() - 2) != "\r\n")
 		fullMessage += "\r\n";
 
-	send(fd, fullMessage.c_str(), fullMessage.size(), 0);
+	client->appendToOutputBuffer(fullMessage);
+	setClientWritable(fd, true);
 }
 
 void Server::sendToClient(Client* client, const std::string& message) {
+	if (!client)
+		return;
 	sendMessage(client->getFd(), message);
+}
+
+void Server::flushClientOutput(int fd) {
+	Client* client = getClientByFd(fd);
+	if (!client)
+		return;
+
+	const std::string& buffer = client->getOutputBuffer();
+	if (buffer.empty()) {
+		setClientWritable(fd, false);
+		return;
+	}
+
+	ssize_t sent = send(fd, buffer.c_str(), buffer.size(), 0);
+	if (sent > 0) {
+		client->eraseOutputBuffer(static_cast<size_t>(sent));
+		if (!client->hasPendingOutput())
+			setClientWritable(fd, false);
+		return;
+	}
+	if (sent < 0 && (errno == EWOULDBLOCK || errno == EAGAIN))
+		return;
+	removeClient(fd);
+}
+
+void Server::setClientWritable(int fd, bool enabled) {
+	for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it) {
+		if (it->fd == fd) {
+			it->events = clientPollEvents(enabled);
+			return;
+		}
+	}
 }
 
 std::string Server::toLowerCase(const std::string& str) {
