@@ -42,6 +42,8 @@ private:
 	std::vector<std::string> parseMessage(const std::string& message);
 	void sendMessage(int fd, const std::string& message);
 	void sendToClient(Client* client, const std::string& message);
+	void flushClientOutput(int fd);
+	void setClientWritable(int fd, bool enabled);
 
 	// IRC Commands
 	void handlePass(Client* client, const std::vector<std::string>& params);

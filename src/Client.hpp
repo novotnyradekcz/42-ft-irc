@@ -12,6 +12,7 @@ private:
 	std::string	_realname;
 	std::string	_hostname;
 	std::string	_buffer;
+	std::string	_outputBuffer;
 	bool		_authenticated;
 	bool		_registered;
 	bool		_receivedPass;
@@ -29,6 +30,7 @@ public:
 	const std::string& getRealname() const;
 	const std::string& getHostname() const;
 	const std::string& getBuffer() const;
+	const std::string& getOutputBuffer() const;
 	bool isAuthenticated() const;
 	bool isRegistered() const;
 	bool hasReceivedPass() const;
@@ -48,6 +50,9 @@ public:
 	// Buffer management
 	void appendToBuffer(const std::string& data);
 	void clearBuffer();
+	void appendToOutputBuffer(const std::string& data);
+	void eraseOutputBuffer(size_t count);
+	bool hasPendingOutput() const;
 
 	// Registration check
 	void checkRegistration();
