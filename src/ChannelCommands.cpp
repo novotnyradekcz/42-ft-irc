@@ -219,7 +219,7 @@ void Server::handleInvite(Client* client, const std::vector<std::string>& params
 		return;
 	}
 
-	if (channel->isInviteOnly() && !channel->isOperator(client)) {
+	if (!channel->isOperator(client)) {
 		sendNumericReply(client, 482, channelName + " :You're not channel operator");
 		return;
 	}
