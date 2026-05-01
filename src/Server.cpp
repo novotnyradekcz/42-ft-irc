@@ -129,8 +129,9 @@ void Server::run() {
 			short revents = _pollFds[i].revents;
 
 			if (hasPollError(revents)) {
-				if (fd != _serverSocket)
-					removeClient(fd);
+				if (fd == _serverSocket)
+					throw std::runtime_error("Server socket poll error");
+				removeClient(fd);
 				continue;
 			}
 			if (hasPollEvent(revents, POLLIN)) {

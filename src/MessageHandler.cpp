@@ -37,6 +37,7 @@ void Server::handleClientData(int fd) {
 		size_t pos = buf.find("\r\n");
 		size_t advance = 2;
 
+        // Handle \n only (some clients send \n instead of \r\n)
 		if (pos == std::string::npos) {
 			pos = buf.find('\n');
 			advance = 1;

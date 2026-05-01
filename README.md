@@ -1,6 +1,6 @@
-# ft_irc - Internet Relay Chat Server
-
 *This project has been created as part of the 42 curriculum by rnovotny.*
+
+# ft_irc - Internet Relay Chat Server
 
 ## Reference IRC Client
 
