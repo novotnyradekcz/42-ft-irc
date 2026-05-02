@@ -4,7 +4,7 @@
 
 ## Description
 
-ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and has been tested with Halloy as the reference IRC client.
+ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and has been tested with irssi as the reference IRC client.
 
 The project demonstrates advanced network programming concepts including non-blocking I/O, socket programming, and protocol implementation. Key features include:
 - Multi-client support using poll() for efficient I/O multiplexing
@@ -16,22 +16,22 @@ The project demonstrates advanced network programming concepts including non-blo
 
 ## Reference IRC Client
 
-**Halloy** ([https://halloy.chat](https://halloy.chat)) is the official reference client used for testing this IRC server implementation. The server is designed to be fully compatible with Halloy and follows the IRC protocol specifications (RFC 1459 and RFC 2812) to ensure proper interoperability.
+**irssi** ([https://irssi.org](https://irssi.org)) is the official reference client used for testing this IRC server implementation. The server is designed to be fully compatible with irssi and follows the IRC protocol specifications (RFC 1459 and RFC 2812) to ensure proper interoperability.
 
-### Why Halloy?
-- **Modern and intuitive**: Clean, modern GUI built with Rust
-- **Cross-platform**: Available for macOS, Linux, and Windows
-- **Standards-compliant**: Properly implements IRC protocol with IRCv3 support
-- **Active development**: Well-maintained open-source project
-- **User-friendly**: Excellent for both testing and daily IRC use
-- **Lightweight**: Fast and responsive despite being a GUI application
+### Why irssi?
+- **Widely used**: The most popular terminal-based IRC client
+- **Standards-compliant**: Implements IRC protocol correctly and predictably
+- **Terminal-based**: No GUI required, works on any Unix machine
+- **Lightweight**: Fast and scriptable with no external dependencies
+- **Commonly used at 42**: Familiar to peers and evaluators
 
 ### Installation
 ```bash
 # macOS
-brew install --cask halloy
+brew install irssi
 
-# Or download from https://github.com/squidowl/halloy/releases
+# Ubuntu/Debian
+sudo apt install irssi
 ```
 
 ## Instructions
@@ -63,21 +63,17 @@ Example:
 
 ### Connecting with IRC Client
 
-#### Using Halloy (Reference Client):
+#### Using irssi (Reference Client):
 
-**Quick Start:**
-1. Launch Halloy
-2. Click "Add Server" or go to Settings
-3. Configure server connection:
-   - **Server**: `localhost` or `127.0.0.1`
-   - **Port**: `6667`
-   - **Password**: `mypassword` (or whatever you set)
-   - **Nickname**: Choose your nickname
-   - **Username**: Your username
-4. Click "Connect"
-5. Once connected, join a channel by typing `/join #channel`
+**Basic Connection:**
+```bash
+irssi
+/connect localhost 6667 mypassword
+/nick YourNickname
+/join #channel
+```
 
-**Basic Commands in Halloy:**
+**Useful irssi Commands:**
 - `/join #channel` - Join a channel
 - `/msg #channel Hello!` - Send message to channel
 - `/msg nickname Hi` - Send private message
@@ -90,7 +86,6 @@ Example:
 - `/quit` - Disconnect from server
 
 **Channel Operator Commands:**
-Halloy supports all IRC operator commands through the `/mode` command:
 - `/mode #channel +i` - Make channel invite-only
 - `/mode #channel +k password` - Set channel key
 - `/mode #channel +o nickname` - Give operator status
@@ -182,12 +177,12 @@ ft_irc/
 ├── obj/                      # Compiled object files
 ```
 
-## Halloy Compatibility
+## irssi Compatibility
 
-This server has been designed to be fully compatible with Halloy, a modern Rust-based IRC client. The following features are implemented to ensure smooth operation:
+This server has been designed to be fully compatible with irssi. The following features are implemented to ensure smooth operation:
 
 ### Supported Features
-- ✅ **CAP negotiation**: Full support for capability negotiation (CAP LS, CAP REQ, CAP END)
+- ✅ **CAP negotiation**: Handles CAP LS, CAP REQ, CAP END (sent by irssi on connect)
 - ✅ **Proper numeric replies**: All numeric codes are 3-digit padded (001, 002, etc.) as per IRC spec
 - ✅ **Welcome sequence**: Complete RPL_WELCOME through RPL_MYINFO messages (001-004)
 - ✅ **PING/PONG**: Keep-alive mechanism for connection stability
@@ -196,6 +191,7 @@ This server has been designed to be fully compatible with Halloy, a modern Rust-
 - ✅ **Channel prefixes**: Supports # and & channel types
 - ✅ **Operator privileges**: First user in channel automatically becomes operator
 - ✅ **NAMES list**: Sends proper channel member list (RPL_NAMREPLY 353, RPL_ENDOFNAMES 366)
+- ✅ **PRIVMSG routing**: Messages sent to selected users or channels
 
 ### Registration Sequence
 The server requires authentication in the following order (as per ft_irc subject):
@@ -203,84 +199,77 @@ The server requires authentication in the following order (as per ft_irc subject
 2. **NICK** `<nickname>` - Can be sent before or after USER
 3. **USER** `<username> 0 * <realname>` - Completes registration
 
-Halloy automatically sends these during connection setup. Once all three commands are successfully processed, the server sends welcome messages (001-004).
-
-### IRCv3 Features
-- **CAP negotiation**: Halloy sends CAP LS during connection. Server responds with empty capability list
-- **No extended capabilities**: Server implements core IRC (RFC 1459/RFC 2812) without IRCv3 extensions
-- **Graceful fallback**: Halloy works perfectly with basic IRC protocol
+irssi automatically sends these during connection. Once all three are processed, the server sends welcome messages (001-004).
 
 ### Tested Versions
-- Halloy 2024.x and later (Rust-based IRC client)
-- Compatible with standard IRC protocol implementations
+- irssi 1.2.x and later
+- Works with default irssi configuration
 
 ### Known Compatibility Notes
 - The server implements the core IRC commands required by the ft_irc subject
 - Advanced IRC features (WHOIS, WHO, LIST, etc.) are not required and not implemented
 - SSL/TLS is not required by the subject and not supported
 - SASL authentication is not required and not supported
-- Modern Halloy features work via standard IRC command fallbacks
 
 ## Testing
 
-### Testing with Halloy (Reference Client)
+### Testing with irssi (Reference Client)
 
 #### 1. Basic Connection Test
-1. Start the server: `./ircserv 6667 password`
-2. Open Halloy
-3. Add a new server with:
-   - Server: `localhost`
-   - Port: `6667`
-   - Password: `password`
-   - Your chosen nickname
-4. Click Connect
+```bash
+# Terminal 1: start the server
+./ircserv 6667 password
 
-Expected result: You should successfully connect and see the server welcome message.
+# Terminal 2: connect with irssi
+irssi
+/connect localhost 6667 password
+/nick alice
+```
+Expected result: welcome messages (001-004) confirm successful registration.
 
 #### 2. Multi-Client Channel Test
-1. Start server: `./ircserv 6667 password`
-2. Open Halloy (first instance/window)
-   - Connect as `alice`
-   - Type: `/join #test`
-   - Type: `Hello from Alice!`
-3. Open another Halloy instance or use another client
-   - Connect as `bob`
-   - Type: `/join #test`
-   - Type: `Hello from Bob!`
+```bash
+# Terminal 2 (alice):
+/join #test
+# type: Hello from Alice!
 
-Expected result: Both users should see each other's messages in #test channel.
+# Terminal 3 (bob, another irssi instance):
+/connect localhost 6667 password
+/nick bob
+/join #test
+# type: Hello from Bob!
+```
+Expected result: each user sees the other's messages; their own messages appear locally without echo from the server.
 
 #### 3. Channel Operator Commands Test
 As the first user in a channel (automatically an operator):
-1. `/join #operators`
-2. `/topic #operators This is our topic` - Set topic
-3. `/mode #operators +i` - Make invite-only
-4. Have another user try to join (should fail without invite)
-5. `/invite bob #operators` - Invite bob
-6. Bob should now be able to join
-7. `/mode #operators +o bob` - Give bob operator status
-8. `/mode #operators +k secretpass` - Set channel key
-9. `/kick #operators bob Testing kick` - Kick bob
-
-Expected result: All commands should execute properly with appropriate feedback.
+```
+/join #operators
+/topic #operators This is our topic
+/mode #operators +i
+/invite bob #operators
+/mode #operators +o bob
+/mode #operators +k secretpass
+/kick #operators bob Testing kick
+```
 
 #### 4. Private Messaging Test
-In Halloy:
-1. Open a PM with another user by clicking their name or typing `/msg nickname Hello!`
-2. The other user should receive your message
-3. Both users can see the conversation
+```
+/msg bob Hello Bob!
+```
+Expected result: bob receives the message; alice sees it locally via irssi's own echo.
 
-#### 5. Mode Testing in Halloy
-Test all five required modes:
-1. `/mode #test +i` - Invite-only
-2. `/mode #test +t` - Topic restricted to operators
-3. `/mode #test +k mykey` - Channel key
-4. `/mode #test +o username` - Give operator
-5. `/mode #test +l 5` - User limit
-
-Try removing modes with `-`:
-- `/mode #test -i` - Remove invite-only
-- `/mode #test -k` - Remove key
+#### 5. Mode Testing
+```
+/join #modetest
+/mode #modetest +i
+/mode #modetest +t
+/mode #modetest +k pass123
+/mode #modetest +l 5
+/mode #modetest +o bob
+/mode #modetest -i
+/mode #modetest -k
+```
 
 ### Basic Protocol Testing with nc
 
