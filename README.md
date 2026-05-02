@@ -1,6 +1,18 @@
-*This project has been created as part of the 42 curriculum by rnovotny.*
+*This project has been created as part of the 42 curriculum by aevstign, rnovotny.*
 
 # ft_irc - Internet Relay Chat Server
+
+## Description
+
+ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and has been tested with Halloy as the reference IRC client.
+
+The project demonstrates advanced network programming concepts including non-blocking I/O, socket programming, and protocol implementation. Key features include:
+- Multi-client support using poll() for efficient I/O multiplexing
+- User authentication with password protection
+- Channel creation and management
+- Private messaging between users
+- Channel operators with special privileges
+- Multiple channel modes (invite-only, topic restrictions, user limits, etc.)
 
 ## Reference IRC Client
 
@@ -21,18 +33,6 @@ brew install --cask halloy
 
 # Or download from https://github.com/squidowl/halloy/releases
 ```
-
-## Description
-
-ft_irc is a fully functional IRC (Internet Relay Chat) server implementation in C++98. The server provides real-time text-based communication supporting multiple simultaneous clients, channels, and private messaging. It complies with the IRC protocol specifications and has been tested with Halloy as the reference IRC client.
-
-The project demonstrates advanced network programming concepts including non-blocking I/O, socket programming, and protocol implementation. Key features include:
-- Multi-client support using poll() for efficient I/O multiplexing
-- User authentication with password protection
-- Channel creation and management
-- Private messaging between users
-- Channel operators with special privileges
-- Multiple channel modes (invite-only, topic restrictions, user limits, etc.)
 
 ## Instructions
 
@@ -221,24 +221,6 @@ Halloy automatically sends these during connection setup. Once all three command
 - SASL authentication is not required and not supported
 - Modern Halloy features work via standard IRC command fallbacks
 
-## Resources
-
-### Classic References
-- [RFC 1459](https://tools.ietf.org/html/rfc1459) - Internet Relay Chat Protocol
-- [RFC 2812](https://tools.ietf.org/html/rfc2812) - IRC Client Protocol
-- [Modern IRC Documentation](https://modern.ircdocs.horse/) - Updated IRC specifications
-- [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/) - Socket programming tutorial
-- [poll() man page](https://man7.org/linux/man-pages/man2/poll.2.html) - I/O multiplexing documentation
-
-### AI Usage
-AI tools (GitHub Copilot, Claude) were used in this project for:
-- **Code generation**: Initial boilerplate for class structures and function signatures
-- **Documentation**: Assistance with README formatting and IRC protocol documentation
-- **Debugging assistance**: Identifying edge cases in message parsing
-- **Refactoring suggestions**: Code organization and C++98 compliance checks
-
-All AI-generated content was thoroughly reviewed, tested, and modified to ensure correctness, compliance with project requirements, and full understanding of implementation details.
-
 ## Testing
 
 ### Testing with Halloy (Reference Client)
@@ -349,9 +331,23 @@ The server correctly aggregates partial packets before processing commands.
 - DCC (Direct Client-to-Client) is not supported
 - No SSL/TLS encryption
 
-## Authors
+## Resources
 
-rnovotny - 42 Prague
+### Classic References
+- [RFC 1459](https://tools.ietf.org/html/rfc1459) - Internet Relay Chat Protocol
+- [RFC 2812](https://tools.ietf.org/html/rfc2812) - IRC Client Protocol
+- [Modern IRC Documentation](https://modern.ircdocs.horse/) - Updated IRC specifications
+- [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/) - Socket programming tutorial
+- [poll() man page](https://man7.org/linux/man-pages/man2/poll.2.html) - I/O multiplexing documentation
+
+### AI Usage
+AI tools (GitHub Copilot, Claude) were used in this project for:
+- **Code generation**: Initial boilerplate for class structures and function signatures
+- **Documentation**: Assistance with README formatting and IRC protocol documentation
+- **Debugging assistance**: Identifying edge cases in message parsing
+- **Refactoring suggestions**: Code organization and C++98 compliance checks
+
+All AI-generated content was thoroughly reviewed, tested, and modified to ensure correctness, compliance with project requirements, and full understanding of implementation details.
 
 ## License
 
