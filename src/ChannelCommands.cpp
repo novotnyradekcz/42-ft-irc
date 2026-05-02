@@ -127,11 +127,12 @@ void Server::handlePrivmsg(Client* client, const std::vector<std::string>& param
 			return;
 		}
 
-		// Send to all members including sender (for Halloy compatibility)
+		// Send to all members except sender (irssi displays sent messages itself)
 		std::string privMsg = ":" + client->getPrefix() + " PRIVMSG " + target + " :" + message;
 		const std::set<Client*>& members = channel->getMembers();
 		for (std::set<Client*>::const_iterator it = members.begin(); it != members.end(); ++it) {
-			sendToClient(*it, privMsg);
+			if (*it != client)
+				sendToClient(*it, privMsg);
 		}
 	} else {
 		// Private message to user
